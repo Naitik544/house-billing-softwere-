@@ -1,0 +1,5 @@
+node_modules/
+.env
+database_fallback.json
+.DS_Store
+*.log

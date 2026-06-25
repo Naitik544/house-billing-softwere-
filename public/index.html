@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jethi House - 2nd Floor Rent Billing</title>
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- CONFIRMATION MODAL -->
+  <div id="confirm-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3>Confirm Action</h3>
+        <button class="modal-close" onclick="closeConfirmModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-modal-text">Are you sure you want to perform this action?</p>
+        <div class="form-footer" style="padding-top: 16px; margin-top: 16px;">
+          <button class="btn btn-secondary btn-sm" onclick="closeConfirmModal()">Cancel</button>
+          <button id="confirm-modal-btn" class="btn btn-danger btn-sm">Yes, Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       LOGIN VIEW
+       ========================================== -->
+  <div id="login-view" class="login-container">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-logo-img"><i class="fa-solid fa-house-chimney-user"></i></div>
+        <div class="login-logo-text">Jethi House</div>
+      </div>
+      <div class="login-title-area">
+        <h3 id="auth-title">Landlord Login</h3>
+        <p id="auth-desc">Access 2nd Floor rental dashboard and billing system</p>
+      </div>
+      
+      <form id="login-form">
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label for="login-email">Email Address <span>*</span></label>
+          <input type="email" id="login-email" class="form-control" placeholder="name@example.com" required>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 24px;">
+          <label for="login-password">Password <span>*</span></label>
+          <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+        </div>
+        
+        <button type="submit" id="auth-submit-btn" class="btn btn-primary w-full" style="padding: 12px;">Sign In</button>
+      </form>
+      
+      <div class="text-right" style="font-size: 0.85rem; margin-top: 8px;">
+        <span id="toggle-auth-view" style="color: var(--accent-blue); cursor: pointer; font-weight: 600;">Create Landlord Account</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MAIN APP CONTAINER (PROTECTED)
+       ========================================== -->
+  <div id="app-view" class="app-container" style="display: none;">
+    
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header" style="padding: 16px 20px;">
+        <div class="sidebar-logo"><i class="fa-solid fa-house-chimney-user"></i></div>
+        <div>
+          <div class="sidebar-brand" style="font-size: 1rem; line-height: 1.2;">Jethi House</div>
+          <div style="font-size: 0.7rem; color: #38bdf8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">2nd Floor Rent</div>
+        </div>
+      </div>
+      
+      <ul class="sidebar-menu">
+        <li class="sidebar-menu-item active" data-view="dashboard">
+          <a href="#" onclick="switchView('dashboard')"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span></a>
+        </li>
+        <li class="sidebar-menu-item" data-view="tenants">
+          <a href="#" onclick="switchView('tenants')"><i class="fa-solid fa-users"></i> <span>Tenants List</span></a>
+        </li>
+        <li class="sidebar-menu-item" data-view="bills">
+          <a href="#" onclick="switchView('bills')"><i class="fa-solid fa-file-invoice-dollar"></i> <span>Bills / Invoices</span></a>
+        </li>
+        <li class="sidebar-menu-item" data-view="payments">
+          <a href="#" onclick="switchView('payments')"><i class="fa-solid fa-receipt"></i> <span>Payments Ledger</span></a>
+        </li>
+        <li class="sidebar-menu-item" data-view="dues">
+          <a href="#" onclick="switchView('dues')"><i class="fa-solid fa-triangle-exclamation"></i> <span>Pending Dues</span></a>
+        </li>
+        <li class="sidebar-menu-item" data-view="reports">
+          <a href="#" onclick="switchView('reports')"><i class="fa-solid fa-chart-line"></i> <span>Dues & Collections</span></a>
+        </li>
+        <li class="sidebar-menu-item" data-view="settings">
+          <a href="#" onclick="switchView('settings')"><i class="fa-solid fa-sliders"></i> <span>Receipt Settings</span></a>
+        </li>
+      </ul>
+      
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar" id="user-avatar">RS</div>
+          <div class="sidebar-username" id="user-display-name">Ramanand Sagar</div>
+        </div>
+        <button class="logout-btn" onclick="logout()" title="Logout"><i class="fa-solid fa-power-off"></i></button>
+      </div>
+    </aside>
+
+    <!-- CONTENT WRAPPER -->
+    <main class="main-wrapper">
+      
+      <!-- TOP NAV -->
+      <header class="top-navbar">
+        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+        <div class="page-title-area">
+          <h2 id="view-title">Dashboard</h2>
+        </div>
+        <div class="navbar-actions">
+          <div class="system-time" id="system-time">2026-06-25 17:15</div>
+        </div>
+      </header>
+
+      <!-- VIEWPORT CONTENT -->
+      <div class="content-area">
+
+        <!-- 1) DASHBOARD VIEW -->
+        <section id="dashboard-view-sec" class="view-section active">
+          <!-- Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-card blue">
+              <div class="stat-title">Active Tenants</div>
+              <div class="stat-value" id="stat-tenants">0</div>
+              <div class="stat-sub">Renting rooms currently</div>
+            </div>
+            <div class="stat-card teal">
+              <div class="stat-title">Expected Rent (Monthly)</div>
+              <div class="stat-value" id="stat-expected-rent">₹0</div>
+              <div class="stat-sub">Based on active tenant list</div>
+            </div>
+            <div class="stat-card green">
+              <div class="stat-title">Total Collected</div>
+              <div class="stat-value" id="stat-collected">₹0</div>
+              <div class="stat-sub">Accumulated paid invoices</div>
+            </div>
+            <div class="stat-card red">
+              <div class="stat-title">Total Pending Dues</div>
+              <div class="stat-value" id="stat-pending">₹0</div>
+              <div class="stat-sub">Dues waiting for collection</div>
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="dashboard-actions">
+            <button class="btn btn-primary" onclick="openTenantModal()"><i class="fa-solid fa-user-plus"></i> Add Tenant</button>
+            <button class="btn btn-success" onclick="openBillModal()"><i class="fa-solid fa-file-circle-plus"></i> Generate Bill</button>
+            <button class="btn btn-secondary" onclick="openPaymentModal()"><i class="fa-solid fa-money-bill-wave"></i> Collect Payment</button>
+          </div>
+
+          <!-- Dashboard Row: Charts + Activities -->
+          <div class="dashboard-grid">
+            
+            <!-- Monthly Trends Bar Chart -->
+            <div class="dashboard-panel">
+              <div class="panel-header">
+                <h3>Monthly Collections vs Expected</h3>
+              </div>
+              <div class="chart-container" id="chart-container">
+                <!-- Bar elements will be rendered dynamically by JavaScript -->
+              </div>
+              <div class="chart-legends">
+                <div class="legend-item"><div class="legend-dot expected"></div> Expected Dues</div>
+                <div class="legend-item"><div class="legend-dot collected"></div> Collected Income</div>
+              </div>
+            </div>
+
+            <!-- Recent Dues & Activities -->
+            <div class="dashboard-panel">
+              <div class="panel-header">
+                <h3>Recent Payments</h3>
+                <a href="#" onclick="switchView('payments')" class="action-link" style="font-size: 0.85rem; font-weight: 600;">View All</a>
+              </div>
+              <div class="table-responsive">
+                <table class="custom-table" style="font-size: 0.8rem;">
+                  <thead>
+                    <tr>
+                      <th>Tenant</th>
+                      <th>Room</th>
+                      <th>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recent-payments-table">
+                    <!-- Dynamic Rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Recent Bills generated -->
+          <div class="dashboard-panel">
+            <div class="panel-header">
+              <h3>Recent Invoices Generated</h3>
+              <a href="#" onclick="switchView('bills')" class="action-link" style="font-size: 0.85rem; font-weight: 600;">View All</a>
+            </div>
+            <div class="table-responsive">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Bill Number</th>
+                    <th>Tenant Name</th>
+                    <th>Room</th>
+                    <th>Month</th>
+                    <th>Total Amount</th>
+                    <th>Pending</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-bills-table">
+                  <!-- Dynamic Rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2) TENANTS LIST VIEW -->
+        <section id="tenants-view-sec" class="view-section">
+          <!-- Filters & Actions -->
+          <div class="filter-row">
+            <div class="filter-group search-group">
+              <label class="filter-label">Search Tenant</label>
+              <input type="text" id="tenant-search" class="form-control" placeholder="Search by name, room number, or mobile..." oninput="filterTenants()">
+            </div>
+            <div class="filter-group">
+              <label class="filter-label">Status Filter</label>
+              <select id="tenant-filter-status" class="form-control" onchange="filterTenants()">
+                <option value="All">All Tenants</option>
+                <option value="Active">Active Tenants</option>
+                <option value="Left">Left (Inactive)</option>
+              </select>
+            </div>
+            <div>
+              <button class="btn btn-primary" style="margin-top: 18px;" onclick="openTenantModal()"><i class="fa-solid fa-user-plus"></i> Add New Tenant</button>
+            </div>
+          </div>
+
+          <!-- Tenants Table -->
+          <div class="card-panel">
+            <div class="table-responsive">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Tenant Name</th>
+                    <th>Room No.</th>
+                    <th>Mobile</th>
+                    <th>Start Date</th>
+                    <th>Monthly Rent</th>
+                    <th>Security Deposit</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="tenants-table-body">
+                  <!-- Dynamic Rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3) TENANT DETAILS VIEW -->
+        <section id="tenant-details-view-sec" class="view-section">
+          <div class="dashboard-actions" style="margin-bottom: 20px;">
+            <button class="btn btn-secondary" onclick="switchView('tenants')"><i class="fa-solid fa-arrow-left"></i> Back to List</button>
+            <button class="btn btn-primary" id="detail-edit-tenant-btn"><i class="fa-solid fa-user-pen"></i> Edit Profile</button>
+            <button class="btn btn-success" id="detail-gen-bill-btn"><i class="fa-solid fa-file-circle-plus"></i> Bill Tenant</button>
+          </div>
+
+          <div class="tenant-details-grid">
+            <!-- Left Info Panel -->
+            <div class="dashboard-panel">
+              <h3 id="detail-tenant-name" style="font-size: 1.4rem; margin-bottom: 4px;">Ramesh Patel</h3>
+              <div id="detail-tenant-status-badge" style="margin-bottom: 20px;">
+                <span class="badge badge-active">Active</span>
+              </div>
+              
+              <ul class="info-list">
+                <li class="info-item"><span>Room Number</span> <span id="detail-room">Room 101</span></li>
+                <li class="info-item"><span>Mobile</span> <span id="detail-mobile">9812345678</span></li>
+                <li class="info-item"><span>Alt Mobile</span> <span id="detail-alt-mobile">-</span></li>
+                <li class="info-item"><span>Aadhaar ID</span> <span id="detail-idproof">-</span></li>
+                <li class="info-item"><span>Rent Start Date</span> <span id="detail-start-date">2026-01-01</span></li>
+                <li class="info-item"><span>Monthly Rent</span> <span id="detail-rent">₹6,000</span></li>
+                <li class="info-item"><span>Security Deposit</span> <span id="detail-deposit">₹12,000</span></li>
+                <li class="info-item" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+                  <span>Full Address</span>
+                  <span id="detail-address" style="font-weight: 500; font-size: 0.85rem; color: var(--text-secondary);">Address info</span>
+                </li>
+                <li class="info-item" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+                  <span>Landlord Notes</span>
+                  <span id="detail-notes" style="font-weight: 500; font-size: 0.85rem; color: var(--text-secondary); font-style: italic;">Notes info</span>
+                </li>
+              </ul>
+              
+              <div class="card-panel" style="margin-top: 24px; padding: 16px; border-color: var(--danger); background-color: var(--danger-bg); display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                  <h4 style="font-size: 0.8rem; color: var(--danger);">TOTAL OUTSTANDING</h4>
+                  <p style="font-size: 1.4rem; font-weight: 800; color: #7f1d1d;" id="detail-total-pending">₹3,600</p>
+                </div>
+                <button class="btn btn-danger btn-sm" id="detail-collect-dues-btn">Collect</button>
+              </div>
+            </div>
+
+            <!-- Right History Lists -->
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+              <!-- Bills Generated -->
+              <div class="dashboard-panel">
+                <div class="panel-header">
+                  <h3>Bill History</h3>
+                </div>
+                <div class="table-responsive">
+                  <table class="custom-table" style="font-size: 0.85rem;">
+                    <thead>
+                      <tr>
+                        <th>Bill No.</th>
+                        <th>Month</th>
+                        <th>Amount</th>
+                        <th>Paid</th>
+                        <th>Pending</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="detail-bills-table-body">
+                      <!-- Dynamic rows -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Payments Ledger -->
+              <div class="dashboard-panel">
+                <div class="panel-header">
+                  <h3>Payment History</h3>
+                </div>
+                <div class="table-responsive">
+                  <table class="custom-table" style="font-size: 0.85rem;">
+                    <thead>
+                      <tr>
+                        <th>Receipt No.</th>
+                        <th>Payment Date</th>
+                        <th>Method</th>
+                        <th>Amount</th>
+                        <th>Reference</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="detail-payments-table-body">
+                      <!-- Dynamic rows -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4) BILLS LIST VIEW -->
+        <section id="bills-view-sec" class="view-section">
+          <!-- Filters & Actions -->
+          <div class="filter-row">
+            <div class="filter-group search-group">
+              <label class="filter-label">Search Invoices</label>
+              <input type="text" id="bill-search" class="form-control" placeholder="Search by bill number or tenant name..." oninput="filterBills()">
+            </div>
+            <div class="filter-group">
+              <label class="filter-label">Filter Month</label>
+              <input type="month" id="bill-filter-month" class="form-control" onchange="filterBills()">
+            </div>
+            <div class="filter-group">
+              <label class="filter-label">Payment Status</label>
+              <select id="bill-filter-status" class="form-control" onchange="filterBills()">
+                <option value="All">All Invoices</option>
+                <option value="Paid">Paid</option>
+                <option value="Partially Paid">Partially Paid</option>
+                <option value="Unpaid">Unpaid</option>
+              </select>
+            </div>
+            <div>
+              <button class="btn btn-primary" style="margin-top: 18px;" onclick="openBillModal()"><i class="fa-solid fa-file-circle-plus"></i> Generate New Bill</button>
+            </div>
+          </div>
+
+          <!-- Bills Table -->
+          <div class="card-panel">
+            <div class="table-responsive">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Bill Number</th>
+                    <th>Tenant Name</th>
+                    <th>Room</th>
+                    <th>Month</th>
+                    <th>Total Bill</th>
+                    <th>Amount Paid</th>
+                    <th>Pending Due</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="bills-table-body">
+                  <!-- Dynamic Rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5) PAYMENTS LIST VIEW -->
+        <section id="payments-view-sec" class="view-section">
+          <!-- Filters -->
+          <div class="filter-row">
+            <div class="filter-group search-group">
+              <label class="filter-label">Search Ledger</label>
+              <input type="text" id="payment-search" class="form-control" placeholder="Search by tenant name, payment number..." oninput="filterPayments()">
+            </div>
+            <div class="filter-group">
+              <label class="filter-label">Payment Method</label>
+              <select id="payment-filter-method" class="form-control" onchange="filterPayments()">
+                <option value="All">All Methods</option>
+                <option value="Cash">Cash</option>
+                <option value="UPI">UPI</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+              </select>
+            </div>
+            <div>
+              <button class="btn btn-success" style="margin-top: 18px;" onclick="openPaymentModal()"><i class="fa-solid fa-money-bill-wave"></i> Record Payment</button>
+            </div>
+          </div>
+
+          <!-- Payments Table -->
+          <div class="card-panel">
+            <div class="table-responsive">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Receipt No.</th>
+                    <th>Tenant Name</th>
+                    <th>Room</th>
+                    <th>Payment Date</th>
+                    <th>Method</th>
+                    <th>Transaction Reference</th>
+                    <th>Amount Paid</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="payments-table-body">
+                  <!-- Dynamic Rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6) PENDING DUES TRACKER VIEW -->
+        <section id="dues-view-sec" class="view-section">
+          <div class="filter-row">
+            <div class="filter-group search-group">
+              <label class="filter-label">Search Pending List</label>
+              <input type="text" id="dues-search" class="form-control" placeholder="Search by tenant name, room number..." oninput="filterDues()">
+            </div>
+            <div class="filter-group">
+              <label class="filter-label">Sort Order</label>
+              <select id="dues-sort" class="form-control" onchange="filterDues()">
+                <option value="highest">Highest Dues First</option>
+                <option value="alphabetical">Tenant Name (A-Z)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card-panel">
+            <div class="table-responsive">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Tenant Name</th>
+                    <th>Room Number</th>
+                    <th>Mobile</th>
+                    <th>Status</th>
+                    <th>Total Pending Dues</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="dues-table-body">
+                  <!-- Dynamic Rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7) REPORTS VIEW -->
+        <section id="reports-view-sec" class="view-section">
+          <div class="stats-grid">
+            <div class="stat-card blue">
+              <div class="stat-title">Collection Rate</div>
+              <div class="stat-value" id="report-collection-rate">0%</div>
+              <div class="stat-sub">Collected against total expected</div>
+            </div>
+            <div class="stat-card green">
+              <div class="stat-title">This Month Collection</div>
+              <div class="stat-value" id="report-month-collected">₹0</div>
+              <div class="stat-sub">Receipts this month</div>
+            </div>
+            <div class="stat-card red">
+              <div class="stat-title">Total Dues Outstanding</div>
+              <div class="stat-value" id="report-total-dues">₹0</div>
+              <div class="stat-sub">Pending payments from bills</div>
+            </div>
+          </div>
+
+          <div class="dashboard-actions" style="margin-bottom: 24px;">
+            <button class="btn btn-secondary" onclick="exportBillsCSV()"><i class="fa-solid fa-file-csv"></i> Export Bills CSV</button>
+            <button class="btn btn-secondary" onclick="exportPaymentsCSV()"><i class="fa-solid fa-file-csv"></i> Export Payments CSV</button>
+            <button class="btn btn-primary" onclick="printCollectionsReport()"><i class="fa-solid fa-print"></i> Print Collection Report</button>
+          </div>
+
+          <!-- Dues Summary Table -->
+          <div class="card-panel">
+            <div class="card-title-row">
+              <h3>Month-Wise Collection Summary</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Billing Month</th>
+                    <th>Expected Total</th>
+                    <th>Collected Total</th>
+                    <th>Pending Dues</th>
+                    <th>Completion %</th>
+                  </tr>
+                </thead>
+                <tbody id="report-summary-table-body">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 8) RECEIPT SETTINGS / PROFILE VIEW -->
+        <section id="settings-view-sec" class="view-section">
+          <div class="dashboard-grid" style="grid-template-columns: 1fr;">
+            
+            <!-- Landlord Settings Card -->
+            <div class="dashboard-panel">
+              <div class="panel-header">
+                <h3>Landlord Profile / Receipt Header Settings</h3>
+              </div>
+              <form id="settings-form">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="settings-name">Landlord / Organization Name <span>*</span></label>
+                    <input type="text" id="settings-name" class="form-control" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="settings-phone">Contact Phone / Mobile</label>
+                    <input type="text" id="settings-phone" class="form-control">
+                  </div>
+                  <div class="form-group full-width">
+                    <label for="settings-address">Address (Shown on receipts)</label>
+                    <textarea id="settings-address" class="form-control" rows="3" placeholder="Sagar Villa, Sector 12, Mumbai"></textarea>
+                  </div>
+                </div>
+                <div class="form-footer">
+                  <button type="submit" class="btn btn-primary">Save Settings</button>
+                </div>
+              </form>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ==========================================
+       MODALS SECTION
+       ========================================== -->
+
+  <!-- A) ADD/EDIT TENANT MODAL -->
+  <div id="tenant-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="tenant-modal-title">Add New Tenant</h3>
+        <button class="modal-close" onclick="closeTenantModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="tenant-form">
+          <input type="hidden" id="tenant-id-input">
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="t-name">Tenant Full Name <span>*</span></label>
+              <input type="text" id="t-name" class="form-control" placeholder="Ramesh Patel" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="t-room">House / Room Number <span>*</span></label>
+              <input type="text" id="t-room" class="form-control" placeholder="e.g. 2nd Floor (Room A)" required>
+            </div>
+
+            <div class="form-group">
+              <label for="t-mobile">Mobile Number <span>*</span></label>
+              <input type="tel" id="t-mobile" class="form-control" placeholder="9812345678" required>
+            </div>
+
+            <div class="form-group">
+              <label for="t-alt-mobile">Alternate Mobile Number</label>
+              <input type="tel" id="t-alt-mobile" class="form-control" placeholder="9812345679">
+            </div>
+
+            <div class="form-group">
+              <label for="t-idproof">Aadhaar / ID Proof Number</label>
+              <input type="text" id="t-idproof" class="form-control" placeholder="1234-5678-9012">
+            </div>
+
+            <div class="form-group">
+              <label for="t-rent">Monthly Rent Amount (₹) <span>*</span></label>
+              <input type="number" id="t-rent" class="form-control" min="0" placeholder="6000" required>
+            </div>
+
+            <div class="form-group">
+              <label for="t-deposit">Security Deposit (₹)</label>
+              <input type="number" id="t-deposit" class="form-control" min="0" placeholder="12000">
+            </div>
+
+            <div class="form-group">
+              <label for="t-start-date">Rent Start Date <span>*</span></label>
+              <input type="date" id="t-start-date" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+              <label for="t-status">Tenant Status</label>
+              <select id="t-status" class="form-control">
+                <option value="Active">Active</option>
+                <option value="Left">Left (Inactive)</option>
+              </select>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="t-address">Permanent Address <span>*</span></label>
+              <textarea id="t-address" class="form-control" rows="2" placeholder="Enter tenant's permanent address" required></textarea>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="t-notes">Landlord Remarks / Notes</label>
+              <textarea id="t-notes" class="form-control" rows="2" placeholder="Any security notes or remarks..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeTenantModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Tenant</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- B) GENERATE BILL MODAL -->
+  <div id="bill-modal" class="modal-overlay">
+    <div class="modal-content large">
+      <div class="modal-header">
+        <h3 id="bill-modal-title">Generate Monthly Rent Bill</h3>
+        <button class="modal-close" onclick="closeBillModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="bill-form">
+          <input type="hidden" id="bill-id-input">
+          <input type="hidden" id="bill-overwrite-flag" value="false">
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="b-tenant">Select Tenant <span>*</span></label>
+              <select id="b-tenant" class="form-control" onchange="onBillTenantSelect()" required>
+                <option value="">-- Choose Tenant --</option>
+                <!-- Filled dynamically -->
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="b-month">Billing Month <span>*</span></label>
+              <input type="month" id="b-month" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+              <label for="b-number">Bill Invoice Number</label>
+              <input type="text" id="b-number" class="form-control" readonly placeholder="Auto-generated">
+            </div>
+
+            <div class="form-group">
+              <label for="b-rent">Rent Amount (₹) <span>*</span></label>
+              <input type="number" id="b-rent" class="form-control" min="0" oninput="calculateBillTotal()" required>
+            </div>
+
+            <div class="form-group">
+              <label for="b-elec">Electricity Bill (₹)</label>
+              <input type="number" id="b-elec" class="form-control" min="0" value="0" oninput="calculateBillTotal()">
+            </div>
+
+            <div class="form-group">
+              <label for="b-water">Water Bill (₹)</label>
+              <input type="number" id="b-water" class="form-control" min="0" value="0" oninput="calculateBillTotal()">
+            </div>
+
+            <div class="form-group">
+              <label for="b-maint">Maintenance Charge (₹)</label>
+              <input type="number" id="b-maint" class="form-control" min="0" value="0" oninput="calculateBillTotal()">
+            </div>
+
+            <div class="form-group">
+              <label for="b-other">Other Charges (₹)</label>
+              <input type="number" id="b-other" class="form-control" min="0" value="0" oninput="calculateBillTotal()">
+            </div>
+
+            <div class="form-group">
+              <label for="b-dues">Previous Pending Dues (₹)</label>
+              <input type="number" id="b-dues" class="form-control" min="0" value="0" oninput="calculateBillTotal()">
+            </div>
+
+            <div class="form-group">
+              <label for="b-discount">Discount Allowed (₹)</label>
+              <input type="number" id="b-discount" class="form-control" min="0" value="0" oninput="calculateBillTotal()">
+            </div>
+
+            <div class="form-group">
+              <label for="b-advance">Advance Adjustment (₹)</label>
+              <input type="number" id="b-advance" class="form-control" min="0" value="0" oninput="calculateBillTotal()">
+            </div>
+
+            <div class="form-group">
+              <label style="color: var(--accent-blue); font-weight: 700;">CALCULATED TOTAL BILL AMOUNT (₹)</label>
+              <input type="number" id="b-total" class="form-control" style="font-weight: 700; color: #1e293b; background-color: #f1f5f9;" readonly value="0">
+            </div>
+
+            <div class="form-group full-width">
+              <label for="b-notes">Billing Description / Notes</label>
+              <textarea id="b-notes" class="form-control" rows="2" placeholder="Mention meter reading or other remarks..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeBillModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Generate & Save Bill</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- C) COLLECT PAYMENT MODAL -->
+  <div id="payment-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="payment-modal-title">Record Dues Payment</h3>
+        <button class="modal-close" onclick="closePaymentModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="payment-form">
+          <input type="hidden" id="payment-id-input">
+          
+          <div class="form-grid" style="grid-template-columns: 1fr;">
+            <div class="form-group">
+              <label for="p-tenant">Select Tenant <span>*</span></label>
+              <select id="p-tenant" class="form-control" onchange="onPaymentTenantSelect()" required>
+                <option value="">-- Choose Tenant --</option>
+                <!-- Filled dynamically -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-bill">Select Unpaid/Partial Bill <span>*</span></label>
+              <select id="p-bill" class="form-control" onchange="onPaymentBillSelect()" required>
+                <option value="">-- Choose Invoice --</option>
+                <!-- Filled dynamically -->
+              </select>
+            </div>
+
+            <div class="form-group" id="payment-bill-stats-row" style="background-color: #f8fafc; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-size: 0.85rem; display: none;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>Total Invoice Bill:</span> <strong id="p-bill-total">₹0</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>Already Paid Amount:</span> <strong id="p-bill-paid" style="color: var(--success);">₹0</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span>Remaining Pending Balance:</span> <strong id="p-bill-pending" style="color: var(--danger);">₹0</strong>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="p-date">Payment Date <span>*</span></label>
+              <input type="date" id="p-date" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+              <label for="p-amount">Amount Paid (₹) <span>*</span></label>
+              <input type="number" id="p-amount" class="form-control" min="1" placeholder="Enter collected amount" required>
+            </div>
+
+            <div class="form-group">
+              <label for="p-method">Payment Method <span>*</span></label>
+              <select id="p-method" class="form-control" required>
+                <option value="Cash">Cash</option>
+                <option value="UPI">UPI</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="p-reference">Transaction Reference / Reference Code</label>
+              <input type="text" id="p-reference" class="form-control" placeholder="UPI Ref, Tx ID, cash note, etc.">
+            </div>
+
+            <div class="form-group">
+              <label for="p-notes">Payment Remarks / Notes</label>
+              <textarea id="p-notes" class="form-control" rows="2" placeholder="Any additional notes..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-footer">
+            <button type="button" class="btn btn-secondary" onclick="closePaymentModal()">Cancel</button>
+            <button type="submit" class="btn btn-success">Save Payment</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- D) RECEIPT VIEW POPUP (PRINT FRIENDLY) -->
+  <div id="receipt-modal" class="modal-overlay">
+    <div class="modal-content large" style="background-color: var(--bg-primary); padding: 20px;">
+      <div class="modal-header" style="background: none; border-bottom: none; padding: 10px 0 20px 0;">
+        <h3>Transaction Receipt</h3>
+        <button class="modal-close" onclick="closeReceiptModal()">&times;</button>
+      </div>
+      
+      <div class="modal-body" style="padding: 0;">
+        
+        <!-- Printable receipt layout -->
+        <div class="receipt-container" id="printable-receipt">
+          <div class="receipt-header">
+            <div class="receipt-logo">
+              <h2 id="receipt-brand">Jethi House</h2>
+            </div>
+            <div class="receipt-title">
+              <h1>PAYMENT RECEIPT</h1>
+              <p>Receipt No: <span id="r-number">PAY-2026-001</span></p>
+            </div>
+          </div>
+
+          <div class="receipt-meta">
+            <div>
+              <span>Payment Date:</span> <strong id="r-date">2026-06-25</strong>
+            </div>
+            <div>
+              <span>Status:</span> <span class="badge badge-paid">Fully Paid</span>
+            </div>
+          </div>
+
+          <div class="receipt-addresses">
+            <div class="address-block">
+              <h4>Received From (Tenant)</h4>
+              <p><strong id="r-tenant-name">Ramesh Patel</strong></p>
+              <p>Room/House: <span id="r-room">Room 101</span></p>
+              <p>Mobile: <span id="r-mobile">9812345678</span></p>
+            </div>
+            <div class="address-block">
+              <h4>Paid To (Landlord)</h4>
+              <p><strong id="r-landlord-name">Ramanand Sagar</strong></p>
+              <p id="r-landlord-address">Sagar Villa, Sector 12, Mumbai</p>
+              <p>Phone: <span id="r-landlord-phone">9876543210</span></p>
+            </div>
+          </div>
+
+          <table class="receipt-details-table">
+            <thead>
+              <tr>
+                <th>Billing Item / Month</th>
+                <th class="text-right">Charge Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Rent Charges for Month: <span id="r-month">2026-03</span></td>
+                <td class="text-right" id="r-details-rent">₹6,000</td>
+              </tr>
+              <tr id="r-row-elec">
+                <td>Electricity Charges</td>
+                <td class="text-right" id="r-details-elec">₹400</td>
+              </tr>
+              <tr id="r-row-water">
+                <td>Water Charges</td>
+                <td class="text-right" id="r-details-water">₹200</td>
+              </tr>
+              <tr id="r-row-maint">
+                <td>Maintenance Charges</td>
+                <td class="text-right" id="r-details-maint">₹0</td>
+              </tr>
+              <tr id="r-row-other">
+                <td>Other Charges</td>
+                <td class="text-right" id="r-details-other">₹0</td>
+              </tr>
+              <tr id="r-row-dues">
+                <td>Previous Outstanding Dues</td>
+                <td class="text-right" id="r-details-dues">₹0</td>
+              </tr>
+              <tr id="r-row-discount" style="color: var(--success);">
+                <td>Discount Allowed</td>
+                <td class="text-right" id="r-details-discount">-₹0</td>
+              </tr>
+              <tr id="r-row-advance" style="color: var(--accent-blue);">
+                <td>Advance Paid Adjustments</td>
+                <td class="text-right" id="r-details-advance">-₹0</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="receipt-summary">
+            <div class="summary-row">
+              <span>Total Invoice Amount:</span>
+              <span id="r-sum-total">₹6,600</span>
+            </div>
+            <div class="summary-row" style="color: var(--success); font-weight: 600;">
+              <span>Amount Paid in this Tx:</span>
+              <span id="r-sum-paid">₹3,000</span>
+            </div>
+            <div class="summary-row" style="color: var(--danger); font-weight: 600;">
+              <span>Total Accumulated Payments:</span>
+              <span id="r-sum-accumulated">₹3,000</span>
+            </div>
+            <div class="summary-row total">
+              <span>Outstanding Balance:</span>
+              <span id="r-sum-pending">₹3,600</span>
+            </div>
+          </div>
+
+          <div class="receipt-footer">
+            <p>Payment Method: <strong id="r-details-method">UPI</strong> | Reference Code: <strong id="r-details-ref">upi-ref-4433112</strong></p>
+            <p style="margin-top: 8px;">Thank you for your payment. This is a computer-generated invoice receipt.</p>
+          </div>
+        </div>
+
+        <!-- Print controls -->
+        <div class="receipt-actions-bar">
+          <button class="btn btn-secondary" onclick="closeReceiptModal()">Close Receipt</button>
+          <button class="btn btn-primary" onclick="printReceipt()"><i class="fa-solid fa-print"></i> Print / Save PDF</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Scripts -->
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
