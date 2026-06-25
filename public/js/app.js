@@ -191,7 +191,7 @@ function toggleAuthMode() {
 
 async function handleLoginSubmit(e) {
   e.preventDefault();
-  const email = document.getElementById('login-email').value.trim();
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
   const password = document.getElementById('login-password').value;
   
   try {
